@@ -1,0 +1,52 @@
+# ==============================
+# Python cache files
+# ==============================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ==============================
+# Virtual environments
+# ==============================
+venv/
+.venv/
+env/
+
+# ==============================
+# Environment variables
+# ==============================
+.env
+
+# ==============================
+# Vector database files
+# ==============================
+vector_store/
+
+# ==============================
+# Knowledge base documents
+# Keep folder structure, ignore files inside
+# ==============================
+knowledge_base/**
+
+!knowledge_base/
+!knowledge_base/bestec/
+!knowledge_base/unit1/
+!knowledge_base/unit3/
+!knowledge_base/unit5/
+
+!knowledge_base/bestec/.gitkeep
+!knowledge_base/unit1/.gitkeep
+!knowledge_base/unit3/.gitkeep
+!knowledge_base/unit5/.gitkeep
+
+# ==============================
+# OS files
+# ==============================
+.DS_Store
+Thumbs.db
+
+# ==============================
+# Logs
+# ==============================
+*.log
