@@ -11,3 +11,4 @@ pymupdf
 pytesseract
 pillow
 matplotlib
+langchain-chroma

@@ -6,6 +6,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import io
+import json
 from typing import List
 
 import fitz
@@ -23,9 +24,10 @@ from src.utils.helpers import (
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-
 OCR_TEXT_THRESHOLD = 20
 OCR_RENDER_DPI = 300
+PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
+CHUNK_OUTPUT_FILE = PROCESSED_DATA_DIR / "chunked_documents.json"
 
 
 def scan_knowledge_base() -> List[Path]:
@@ -129,6 +131,31 @@ def load_all_pdfs() -> List[Document]:
     return all_page_documents
 
 
+def serialize_documents(documents: List[Document]) -> List[dict]:
+    serialized = []
+
+    for doc in documents:
+        serialized.append(
+            {
+                "page_content": doc.page_content,
+                "metadata": doc.metadata
+            }
+        )
+
+    return serialized
+
+
+def save_chunked_documents(documents: List[Document], output_file: Path) -> None:
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    serialized_docs = serialize_documents(documents)
+
+    with open(output_file, "w", encoding="utf-8") as file:
+        json.dump(serialized_docs, file, ensure_ascii=False, indent=2)
+
+    print(f"\n[SAVED] Chunked documents saved to: {output_file}")
+
+
 def print_page_summary(documents: List[Document]) -> None:
     print("\n" + "=" * 60)
     print("PDF PAGE LOADING SUMMARY")
@@ -162,7 +189,6 @@ def print_page_summary(documents: List[Document]) -> None:
 
 
 if __name__ == "__main__":
-
     documents = load_all_pdfs()
     print_page_summary(documents)
 
@@ -171,14 +197,13 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("CHUNKING SUMMARY")
     print("=" * 60)
-
     print("Original page documents:", len(documents))
     print("Total chunked documents:", len(chunked_docs))
 
     print("\nSample chunk:")
-
     sample = chunked_docs[0]
-
     print("Metadata:", sample.metadata)
     print("Chunk length:", len(sample.page_content))
     print("Preview:", sample.page_content[:300])
+
+    save_chunked_documents(chunked_docs, CHUNK_OUTPUT_FILE)
