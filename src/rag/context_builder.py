@@ -1,10 +1,8 @@
 MAX_CONTEXT_CHARS_PER_SOURCE = 1700
+MAX_TOTAL_CONTEXT_CHARS = 6000
 
 
 def truncate_text(text: str, max_chars: int = MAX_CONTEXT_CHARS_PER_SOURCE) -> str:
-    """
-    Truncates text to a maximum character length for cleaner LLM context.
-    """
     cleaned_text = text.strip()
 
     if len(cleaned_text) <= max_chars:
@@ -14,9 +12,6 @@ def truncate_text(text: str, max_chars: int = MAX_CONTEXT_CHARS_PER_SOURCE) -> s
 
 
 def format_source_block(chunk: dict, source_number: int) -> str:
-    """
-    Formats a single retrieved chunk into a readable source block.
-    """
     metadata = chunk.get("metadata", {})
     raw_text = chunk.get("text", "")
 
@@ -38,19 +33,25 @@ def format_source_block(chunk: dict, source_number: int) -> str:
 
 
 def build_context(chunks: list[dict]) -> str:
-    """
-    Builds the full LLM context from retrieved chunks.
-    """
     if not chunks:
         return "No relevant internal document context was found."
 
     context_blocks = []
+    current_total = 0
 
     for idx, chunk in enumerate(chunks, start=1):
         block = format_source_block(chunk, idx)
+
+        if current_total + len(block) > MAX_TOTAL_CONTEXT_CHARS:
+            remaining = MAX_TOTAL_CONTEXT_CHARS - current_total
+
+            if remaining > 120:
+                trimmed_block = block[:remaining].rstrip() + "\n..."
+                context_blocks.append(trimmed_block)
+            break
+
         context_blocks.append(block)
+        current_total += len(block)
 
-    context_header = "INTERNAL DOCUMENT CONTEXT\n\n"
-    final_context = context_header + "\n".join(context_blocks)
-
+    final_context = "\n".join(context_blocks)
     return final_context

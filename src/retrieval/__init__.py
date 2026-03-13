@@ -1,1 +1,1 @@
-from src.retrieval.retriever import retrieve_chunks
+from .retriever import Retriever
