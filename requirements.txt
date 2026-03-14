@@ -12,3 +12,4 @@ pytesseract
 pillow
 matplotlib
 langchain-chroma
+reportlab

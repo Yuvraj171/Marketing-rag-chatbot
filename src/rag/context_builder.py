@@ -20,9 +20,10 @@ def format_source_block(chunk: dict, source_number: int) -> str:
     unit = metadata.get("unit", "Unknown Unit")
     file_name = metadata.get("file_name", "Unknown File")
     page = metadata.get("page", "Unknown Page")
+    source_id = chunk.get("source_number", source_number)
 
     source_block = (
-        f"Source {source_number}\n"
+        f"Source [{source_id}]\n"
         f"Unit: {unit}\n"
         f"File: {file_name}\n"
         f"Page: {page}\n"

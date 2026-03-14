@@ -39,12 +39,23 @@ class AnswerGenerator:
         self.retriever = retriever or Retriever()
         self.gemini_client = gemini_client or GeminiClient()
 
+    def _attach_source_numbers(self, chunks: List[dict]) -> List[dict]:
+        numbered_chunks: List[dict] = []
+
+        for idx, chunk in enumerate(chunks, start=1):
+            updated_chunk = dict(chunk)
+            updated_chunk["source_number"] = idx
+            numbered_chunks.append(updated_chunk)
+
+        return numbered_chunks
+
     def generate_answer(
         self,
         query: str,
         retrieval_mode: str = DEFAULT_RETRIEVAL_MODE,
         unit_filter: Optional[str] = None,
         top_k: int = DEFAULT_TOP_K,
+        conversation_history: str = "",
     ) -> GeneratedAnswer:
         if not query or not query.strip():
             raise AnswerGeneratorError("Query is empty.")
@@ -80,24 +91,31 @@ class AnswerGenerator:
                         "unit_filter": unit_filter,
                         "top_k": top_k,
                         "reason": "no_retrieved_documents",
+                        "conversation_history_used": bool(conversation_history.strip()),
                     },
                 )
 
-            context = build_context(chunks)
-            prompt = build_rag_prompt(query=query, context=context)
+            numbered_chunks = self._attach_source_numbers(chunks)
+            context = build_context(numbered_chunks)
+            prompt = build_rag_prompt(
+                query=query,
+                context=context,
+                conversation_history=conversation_history,
+            )
             response = self.gemini_client.generate_text(prompt)
 
             return GeneratedAnswer(
                 answer=response.text,
                 model=response.model,
-                retrieved_chunks=chunks,
+                retrieved_chunks=numbered_chunks,
                 context=context,
                 metadata={
                     "query": query,
                     "retrieval_mode": retrieval_mode,
                     "unit_filter": unit_filter,
                     "top_k": top_k,
-                    "retrieved_count": len(chunks),
+                    "retrieved_count": len(numbered_chunks),
+                    "conversation_history_used": bool(conversation_history.strip()),
                 },
             )
 
