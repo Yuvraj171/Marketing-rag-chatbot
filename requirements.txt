@@ -13,3 +13,5 @@ pillow
 matplotlib
 langchain-chroma
 reportlab
+faster-whisper
+streamlit-mic-recorder
