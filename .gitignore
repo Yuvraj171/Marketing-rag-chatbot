@@ -53,3 +53,7 @@ Thumbs.db
 
 # VSCode settings
 .vscode/
+
+
+ui/assets/
+src/voice/
